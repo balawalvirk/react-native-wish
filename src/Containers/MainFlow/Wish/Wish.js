@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, Slider, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Slider, TextInput, ScrollView, TouchableOpacity } from 'react-native';
 import { width, height, totalSize } from 'react-native-dimension';
 import Carousel from 'react-native-snap-carousel';
 import { Icon } from 'react-native-elements';
 import SnapSlider from 'react-native-snap-slider'
-
+import MapView from 'react-native-maps';
+const RADIUS = 500;
 const Colors = {
     purple: '#651a93',
     orange: '#f9c400',
@@ -64,14 +65,30 @@ class Wish extends Component {
                 { value: 3, label: 'Great' },
                 { value: 4, label: 'New' },
             ],
+            initial_region: {
+                latitude: -29.1482491,
+                longitude: -51.1559028,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+            },
+            mapRegion: null,
+            currentLatitude: null,
+            currentLongitude: null,
+            LATLNG: {
+                latitude: -35,
+                longitude: 120
+            },
         };
         // this.slidingComplete = this.slidingComplete.bind(this);
     }
     slidingComplete = (itemSelected) => {
-        console.warn(itemSelected);
+        //console.warn(itemSelected);
         //console.warn("item selected " + this.refs.slider.state.item);
         //console.warn("item selected(from callback)" + itemSelected);
         //  console.warn("value " + this.sliderOptions[this.refs.slider.state.item].value);
+    }
+    onRegionChangeComplete = () => {
+
     }
     LineHorizontal = ({ style }) => {
         return (
@@ -93,85 +110,106 @@ class Wish extends Component {
         );
     }
     render() {
-        const { categories_list, selectedCategoryIndex, sliderOptions } = this.state
+        const { categories_list, selectedCategoryIndex, sliderOptions, initial_region } = this.state
         return (
             <View style={styles.mainContainer}>
-                <View>
-                    <View style={styles.compContainer}>
-                        <Text style={styles.title}>Category</Text>
-                        <Text style={styles.detail}>Which category best describes the item?</Text>
-                    </View>
-                    <View style={{ justifyContent: 'center', backgroundColor: 'transparent' }}>
-                        <this.LineHorizontal style={{ position: 'absolute', right: 0, left: 0, borderBottomColor: Colors.orange, borderBottomWidth: 2 }} />
-                        <Carousel
-                            ref={(c) => { this._carousel = c; }}
-                            data={categories_list}
-                            layout={'default'}
-                            layoutCardOffset={`10`}
-                            activeSlideOffset={10}
-                            enableSnap={true}
-                            renderItem={this._renderItem}
-                            sliderWidth={width(100)}
-                            itemWidth={width(15)}
-                            inactiveSlideOpacity={1}
-                            inactiveSlideScale={0.8}
-                            onSnapToItem={(index) => this.setState({ selectedCategoryIndex: index })}
-                        />
-                    </View>
-                    <Text style={[styles.SelectedItem, styles.textCenter, { marginTop: height(1) }]}>{categories_list[selectedCategoryIndex].title}</Text>
-                </View>
-                <this.LineHorizontal />
-                <View>
-                    <View style={styles.compContainer}>
-                        <Text style={styles.title}>Condition</Text>
-                        <Text style={styles.detail}>Tap the scale to specify the condition you want the item in.</Text>
-                    </View>
+                <ScrollView showsVerticalScrollIndicator={false}>
                     <View>
-                        <SnapSlider
-                            ref="slider"
-                            containerStyle={styles.snapsliderContainer}
-                            style={styles.snapslider}
-                            itemWrapperStyle={styles.snapsliderItemWrapper}
-                            itemStyle={styles.SelectedItem}
-                            items={sliderOptions}
-                            labelPosition="bottom"
-                            minimumTrackTintColor={Colors.orange}
-                            maximumTrackTintColor={Colors.white}
-                            thumbTintColor={Colors.orange}
-                            defaultItem={1}
-                            onSlidingComplete={this.slidingComplete}
-                        />
-
+                        <View style={styles.compContainer}>
+                            <Text style={styles.title}>Category</Text>
+                            <Text style={styles.detail}>Which category best describes the item?</Text>
+                        </View>
+                        <View style={{ justifyContent: 'center', backgroundColor: 'transparent' }}>
+                            <this.LineHorizontal style={{ position: 'absolute', right: 0, left: 0, borderBottomColor: Colors.orange, borderBottomWidth: 2 }} />
+                            <Carousel
+                                ref={(c) => { this._carousel = c; }}
+                                data={categories_list}
+                                layout={'default'}
+                                layoutCardOffset={`10`}
+                                activeSlideOffset={10}
+                                enableSnap={true}
+                                renderItem={this._renderItem}
+                                sliderWidth={width(100)}
+                                itemWidth={width(15)}
+                                inactiveSlideOpacity={1}
+                                inactiveSlideScale={0.8}
+                                onSnapToItem={(index) => this.setState({ selectedCategoryIndex: index })}
+                            />
+                        </View>
+                        <Text style={[styles.SelectedItem, styles.textCenter, { marginTop: height(1) }]}>{categories_list[selectedCategoryIndex].title}</Text>
                     </View>
-                </View>
-                <this.LineHorizontal />
-                <View>
-                    <View style={styles.compContainer}>
-                        <Text style={styles.title}>Location</Text>
-                        <Text style={styles.detail}>Enter your zip code and a maximum distance away from you to search through.</Text>
-                    </View>
-                    <View style={[styles.rowCompContainer]}>
-                        <View style={{ flex: 5 }}>
+                    <this.LineHorizontal />
+                    <View>
+                        <View style={styles.compContainer}>
+                            <Text style={styles.title}>Condition</Text>
+                            <Text style={styles.detail}>Tap the scale to specify the condition you want the item in.</Text>
+                        </View>
+                        <View>
+                            <SnapSlider
+                                ref="slider"
+                                containerStyle={styles.snapsliderContainer}
+                                style={styles.snapslider}
+                                itemWrapperStyle={styles.snapsliderItemWrapper}
+                                itemStyle={styles.SelectedItem}
+                                items={sliderOptions}
+                                labelPosition="bottom"
+                                minimumTrackTintColor={Colors.orange}
+                                maximumTrackTintColor={Colors.white}
+                                thumbTintColor={Colors.orange}
+                                defaultItem={1}
+                                onSlidingComplete={this.slidingComplete}
+                            />
 
                         </View>
-                        <View style={{ flex: 5, backgroundColor: 'transparent' }}>
-                            <TextInput
-                                placeholder="zip code"
-                                style={{ backgroundColor: Colors.white, borderRadius: 100, marginHorizontal: width(5), textAlign: 'center', fontSize: totalSize(1.75) }}
-                            />
-                            <View style={{ alignItems: 'center' }}>
-                                <Text style={[styles.SelectedItem, styles.textCenter,{marginTop:height(2)}]}>Max. Distance</Text>
-                                <View style={[styles.rowView,{marginTop:height(1.5)}]}>
-                                    <TextInput
-                                        placeholder="#"
-                                        style={{ backgroundColor: Colors.white, borderRadius: 100, textAlign: 'center', fontSize: totalSize(1.75), paddingHorizontal: width(5),marginRight:width(2.5) }}
+                    </View>
+                    <this.LineHorizontal />
+                    <View>
+                        <View style={styles.compContainer}>
+                            <Text style={styles.title}>Location</Text>
+                            <Text style={styles.detail}>Enter your zip code and a maximum distance away from you to search through.</Text>
+                        </View>
+                        <View style={[styles.rowCompContainer, {}]}>
+                            <View style={{ flex: 6, borderRadius: 10, borderWidth: 5, borderColor: Colors.white }}>
+                                <MapView
+                                    style={{ height: height(25) }}
+                                    region={initial_region}
+                                >
+                                    <MapView.Circle
+                                        center={{
+                                            latitude: -29.1471337,
+                                            longitude: -51.148951,
+                                        }}
+                                        radius={4000}
+                                        strokeWidth={0}
+                                        strokeColor={Colors.orange}
+                                        fillColor={Colors.orange + '80'}
                                     />
-                                    <Text style={[styles.SelectedItem, styles.textCenter]}>miles</Text>
+                                </MapView>
+                            </View>
+                            <View style={{ flex: 4, backgroundColor: 'transparent' }}>
+                                <TextInput
+                                    placeholder="zip code"
+                                    style={{ backgroundColor: Colors.white, borderRadius: 100, marginHorizontal: width(5), textAlign: 'center', fontSize: totalSize(1.75) }}
+                                />
+                                <View style={{ alignItems: 'center' }}>
+                                    <Text style={[styles.SelectedItem, styles.textCenter, { marginTop: height(2) }]}>Max. Distance</Text>
+                                    <View style={[styles.rowView, { marginTop: height(1.5) }]}>
+                                        <TextInput
+                                            placeholder="#"
+                                            style={{ backgroundColor: Colors.white, borderRadius: 100, textAlign: 'center', fontSize: totalSize(1.75), paddingHorizontal: width(5), marginRight: width(2.5) }}
+                                        />
+                                        <Text style={[styles.SelectedItem, styles.textCenter]}>miles</Text>
+                                    </View>
                                 </View>
                             </View>
                         </View>
                     </View>
-                </View>
+                    <View style={[{ backgroundColor: Colors.white, paddingVertical: height(2.5), alignItems: 'center' }, styles.shadow]}>
+                        <TouchableOpacity style={{ backgroundColor: Colors.orange, paddingHorizontal: 30, paddingVertical: 10, borderRadius: 100 }}>
+                            <Text style={[styles.buttonText]}>Submit</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
             </View>
         );
     }
@@ -210,6 +248,11 @@ const styles = StyleSheet.create({
         borderBottomColor: Colors.white,
         marginVertical: height(2.5)
     },
+    buttonText: {
+        fontSize: totalSize(2.5),
+        fontWeight: 'bold',
+        color: Colors.white
+    },
     title: {
         fontSize: totalSize(2),
         fontWeight: 'bold',
@@ -226,8 +269,8 @@ const styles = StyleSheet.create({
         color: Colors.purple
     },
     categorySlideInactive: {
-        height: totalSize(5),
-        width: totalSize(5),
+        height: totalSize(6),
+        width: totalSize(6),
         borderRadius: 100,
         alignItems: 'center',
         justifyContent: 'center',
@@ -235,8 +278,8 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
     },
     categorySlideActive: {
-        height: totalSize(5),
-        width: totalSize(5),
+        height: totalSize(6),
+        width: totalSize(6),
         borderWidth: 2,
         borderColor: Colors.orange,
         borderRadius: 100,
