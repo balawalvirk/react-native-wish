@@ -3,9 +3,11 @@ import { View, Text, StyleSheet, Slider, TextInput, ScrollView, TouchableOpacity
 import { width, height, totalSize } from 'react-native-dimension';
 import Carousel from 'react-native-snap-carousel';
 import { Icon } from 'react-native-elements';
-import SnapSlider from 'react-native-snap-slider'
+import MultiSlider from '@ptomasroos/react-native-multi-slider';
+//import SnapSlider from 'react-native-snap-slider'
 import MapView from 'react-native-maps';
-const RADIUS = 500;
+
+
 const Colors = {
     purple: '#651a93',
     orange: '#f9c400',
@@ -65,6 +67,13 @@ class Wish extends Component {
                 { value: 3, label: 'Great' },
                 { value: 4, label: 'New' },
             ],
+            conditions: [
+                { value: 0, label: 'Poor' },
+                { value: 1, label: 'Fair' },
+                { value: 2, label: 'Good' },
+                { value: 3, label: 'Great' },
+                { value: 4, label: 'New' },
+            ],
             initial_region: {
                 latitude: -29.1482491,
                 longitude: -51.1559028,
@@ -78,6 +87,7 @@ class Wish extends Component {
                 latitude: -35,
                 longitude: 120
             },
+            multiSliderValues: [2, 3],
         };
         // this.slidingComplete = this.slidingComplete.bind(this);
     }
@@ -90,19 +100,33 @@ class Wish extends Component {
     onRegionChangeComplete = () => {
 
     }
+    multiSliderValuesChange = values => this.setState({ multiSliderValues: values });
     LineHorizontal = ({ style }) => {
         return (
             <View style={[styles.lineHorizontal, style]}></View>
         )
     }
+    renderScale = () => {
+        return (
+            <>
+                {
+                    this.state.sliderOptions.map((item, key) => {
+                        return (
+                            <Text style={{ fontSize: totalSize(1.7), color: '#651a93' }}>{item.label}</Text>
+                        )
+                    })
+                }
+            </>
+        )
+    }
     _renderItem = ({ item, index }) => {
         return (
             <View style={{ padding: 5 }}>
-                <View style={index === this.state.selectedCategoryIndex ? [styles.categorySlideActive, styles.shadow] : [styles.categorySlideInactive, styles.shadow]}>
+                <View style={index === this.state.selectedCategoryIndex + 3 ? [styles.categorySlideActive, styles.shadow] : [styles.categorySlideInactive, styles.shadow]}>
                     <Icon
                         name={item.iconName}
                         type={item.iconType}
-                        color={index === this.state.selectedCategoryIndex ? Colors.orange : Colors.steel}
+                        color={index === this.state.selectedCategoryIndex + 3 ? Colors.orange : Colors.steel}
                         size={totalSize(2.5)}
                     />
                 </View>
@@ -110,7 +134,7 @@ class Wish extends Component {
         );
     }
     render() {
-        const { categories_list, selectedCategoryIndex, sliderOptions, initial_region } = this.state
+        const { categories_list, selectedCategoryIndex, sliderOptions, initial_region, multiSliderValues } = this.state
         return (
             <View style={styles.mainContainer}>
                 <ScrollView showsVerticalScrollIndicator={false}>
@@ -131,6 +155,7 @@ class Wish extends Component {
                                 renderItem={this._renderItem}
                                 sliderWidth={width(100)}
                                 itemWidth={width(15)}
+                                loop={true}
                                 inactiveSlideOpacity={1}
                                 inactiveSlideScale={0.8}
                                 onSnapToItem={(index) => this.setState({ selectedCategoryIndex: index })}
@@ -139,7 +164,7 @@ class Wish extends Component {
                         <Text style={[styles.SelectedItem, styles.textCenter, { marginTop: height(1) }]}>{categories_list[selectedCategoryIndex].title}</Text>
                     </View>
                     <this.LineHorizontal />
-                    <View>
+                    {/* <View>
                         <View style={styles.compContainer}>
                             <Text style={styles.title}>Condition</Text>
                             <Text style={styles.detail}>Tap the scale to specify the condition you want the item in.</Text>
@@ -160,6 +185,31 @@ class Wish extends Component {
                                 onSlidingComplete={this.slidingComplete}
                             />
 
+                        </View>
+                    </View>
+                    <this.LineHorizontal /> */}
+                    <View>
+                        <View style={styles.compContainer}>
+                            <Text style={styles.title}>Condition</Text>
+                            <Text style={styles.detail}>Tap the scale to specify the condition you want the item in.</Text>
+                        </View>
+                        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                            <MultiSlider
+                                trackStyle={{ backgroundColor: '#FFFFFF' }}
+                                selectedStyle={{ backgroundColor: "#f9c400" }}
+                                values={[multiSliderValues[0], multiSliderValues[1]]}
+                                sliderLength={width(85)}
+                                onValuesChange={this.multiSliderValuesChange}
+                                min={1}
+                                max={5}
+                                markerStyle={{ backgroundColor: '#f9c400' }}
+                                step={1}
+                                allowOverlap={false}
+                                snapped={true}
+                            />
+                        </View>
+                        <View style={[styles.rowCompContainer, { marginTop: 0 }]}>
+                            {this.renderScale()}
                         </View>
                     </View>
                     <this.LineHorizontal />
